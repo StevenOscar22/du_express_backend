@@ -11,19 +11,26 @@ export const getAllUsers = async (req, res) => {
 }
 
 export const createNewUser = async (req, res) => {
-    await prisma.users.create({
-        data: {
-            name: req.body.name,
-            email: req.body.email
-        }
-    })
-    res.json({
-        status: res.statusCode,
-        message: "Create new user success",
-        data: req.body
-    })
-    res.sendStatus(201);
-}
+    try {
+        const user = await prisma.users.create({
+            data: {
+                name: req.body.name,
+                email: req.body.email
+            }
+        });
+
+        // Mengirim data JSON sebagai respons
+        res.status(201).json({
+            status: res.statusCode,
+            message: "Create new user success",
+            data: user
+        });
+    } catch (error) {
+        console.error('Error creating new user:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
 
 export const getSpecificUser = async (req, res) => {
     const id = parseInt(req.params.id);
@@ -40,8 +47,33 @@ export const getSpecificUser = async (req, res) => {
             error: true,
             message: "User not found"
         });
-        
+
     } else {
         res.json(user);
+    }
+}
+
+export const updateUser = async (req, res) => {
+    const id = parseInt(req.params.id);
+
+    try {
+        const user = await prisma.users.update({
+            where: {
+                id
+            },
+            data: {
+                name: req.body.name,
+                email: req.body.email
+            }
+        });
+
+        // Mengirim data JSON sebagai respons
+        res.status(200).json({
+            status: res.statusCode,
+            updated_data: user
+        });
+    } catch (error) {
+        console.error('Error updating user:', error);
+        res.status(500).json({ message: 'Internal server error' });
     }
 }
