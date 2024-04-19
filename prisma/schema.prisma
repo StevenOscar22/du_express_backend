@@ -14,7 +14,48 @@ datasource db {
 }
 
 model Users {
-  id    Int     @id @default(autoincrement())
-  email String  @unique
-  name  String?
+  id       Int       @id @default(autoincrement())
+  username String    @unique
+  password String
+  profile  Profile?
+  blogs    Blog[]
+  comments Comment[]
+}
+
+model Profile {
+  id      Int     @id @default(autoincrement())
+  email   String  @unique
+  name    String?
+  address String
+  phone   String
+  user    Users   @relation(fields: [userId], references: [id])
+  userId  Int     @unique
+}
+
+model Blog {
+  id        Int       @id @default(autoincrement())
+  title     String
+  content   String?
+  published Boolean   @default(false)
+  createdAt DateTime  @default(now())
+  author    Users     @relation(fields: [authorId], references: [id])
+  authorId  Int
+  tags      Tag[]
+  comments  Comment[]
+}
+
+model Tag {
+  id    Int    @id @default(autoincrement())
+  name  String
+  blogs Blog[]
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  content   String
+  createdAt DateTime @default(now())
+  author    Users    @relation(fields: [authorId], references: [id])
+  authorId  Int
+  blog      Blog     @relation(fields: [blogId], references: [id])
+  blogId    Int
 }

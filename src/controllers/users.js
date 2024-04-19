@@ -5,7 +5,10 @@ export const getAllUsers = async (req, res) => {
     const page = req.query.page
     const users = await prisma.users.findMany({
         take: limit && parseInt(limit),
-        skip: page && parseInt(page)
+        skip: page && parseInt(page),
+        include: {
+            profile: true
+        }
     });
     res.json(users);
 }
@@ -14,15 +17,15 @@ export const createNewUser = async (req, res) => {
     try {
         const user = await prisma.users.create({
             data: {
-                name: req.body.name,
-                email: req.body.email
+                username: req.body.username,
+                password: req.body.password
             }
         });
 
         // Mengirim data JSON sebagai respons
         res.status(201).json({
             status: res.statusCode,
-            message: "Create new user success",
+            message: "Create new user is success",
             data: user
         });
     } catch (error) {
@@ -39,6 +42,9 @@ export const getSpecificUser = async (req, res) => {
         where: {
             id
         },
+        include: {
+            profile: true
+        }
     })
 
     if (!user) {
@@ -47,10 +53,8 @@ export const getSpecificUser = async (req, res) => {
             error: true,
             message: "User not found"
         });
-
-    } else {
-        res.json(user);
     }
+    res.json(user);
 }
 
 export const updateUser = async (req, res) => {
@@ -61,10 +65,7 @@ export const updateUser = async (req, res) => {
             where: {
                 id
             },
-            data: {
-                name: req.body.name,
-                email: req.body.email
-            }
+            data: req.body
         });
 
         // Mengirim data JSON sebagai respons
@@ -75,5 +76,30 @@ export const updateUser = async (req, res) => {
     } catch (error) {
         console.error('Error updating user:', error);
         res.status(500).json({ message: 'Internal server error' });
+    }
+}
+
+export const deleteUser = async (req, res) => {
+    const id = parseInt(req.params.id);
+
+    try {
+        const user = await prisma.users.delete({
+            where: {
+                id
+            },
+        })
+        res.status(200).json({
+            status: res.statusCode,
+            message: "Delete user success",
+            data: user
+        })
+
+    } catch (err) {
+        console.error('Error deleting user:', err);
+
+        res.status(500).json({
+            message: 'Internal server error',
+            description: err.message
+        });
     }
 }

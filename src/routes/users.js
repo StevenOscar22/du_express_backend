@@ -1,5 +1,5 @@
 import express from "express";
-import { getAllUsers, createNewUser, getSpecificUser, updateUser } from "./../controllers/users.js";
+import { getAllUsers, createNewUser, getSpecificUser, updateUser, deleteUser } from "./../controllers/users.js";
 
 export const usersRoutes = express.Router();
 
@@ -13,4 +13,7 @@ usersRoutes.get("/:id", getSpecificUser);
 usersRoutes.post("/create", createNewUser);
 
 // update user
-usersRoutes.put("/update/:id", updateUser);
+usersRoutes.patch("/update/:id", updateUser);
+
+// delete user
+usersRoutes.delete("/delete/:id", deleteUser);
