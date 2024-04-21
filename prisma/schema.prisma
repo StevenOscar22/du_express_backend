@@ -15,21 +15,21 @@ datasource db {
 
 model Users {
   id       Int       @id @default(autoincrement())
-  username String    @unique
-  password String
+  name     String?
+  email    String    @unique
   profile  Profile?
   blogs    Blog[]
   comments Comment[]
 }
 
 model Profile {
-  id      Int     @id @default(autoincrement())
-  email   String  @unique
-  name    String?
-  address String
-  phone   String
-  user    Users   @relation(fields: [userId], references: [id])
-  userId  Int     @unique
+  id       Int    @id @default(autoincrement())
+  username String @unique
+  password String
+  address  String
+  phone    String
+  user   Users @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId Int   @unique
 }
 
 model Blog {
