@@ -109,7 +109,7 @@ export const updateBlog = async (req, res) => {
             });
         }
 
-        const tags = await Promise.all(req.body.tags.map(async tagName => {
+        const tags = req.body.tags && await Promise.all(req.body.tags.map(async tagName => {
             let tag = await prisma.tag.findFirst({
                 where: { name: tagName }
             });
