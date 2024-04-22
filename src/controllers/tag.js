@@ -1,4 +1,4 @@
-import { prisma } from "../../lib/prisma.js";
+import { prisma } from "./../lib/prisma.js";
 
 export const getAllTags = async (req, res) => {
     const limit = req.query.limit
@@ -17,12 +17,16 @@ export const getSpecificTag = async (req, res) => {
             id: tagId
         },
         include: {
-            blogs: true
+            blogs: {
+                include: {
+                    author: true
+                }
+            }
         }
     });
 
     if (!tag) {
-        res.status(404).json({
+        return res.status(404).json({
             status: res.statusCode,
             error: true,
             message: "Tag not found"
@@ -45,13 +49,24 @@ export const createNewTag = async (req, res) => {
         });
     } catch (error) {
         console.error('Error creating new tag:', error);
-        res.status(400).json({ message: 'Internal server error' });
+        res.status(500).json({ message: 'Internal server error' });
     }
 }
 
 export const updateTag = async (req, res) => {
     const tagId = parseInt(req.params.tagId);
     try {
+        const findTag = await prisma.tag.findUnique({
+            where: {
+                id: tagId
+            }
+        })
+        if (!findTag) {
+            return res.status(404).json({
+                message: "Tag not found"
+            });
+        }
+
         const tag = await prisma.tag.update({
             where: {
                 id: tagId
@@ -65,13 +80,24 @@ export const updateTag = async (req, res) => {
         });
     } catch (error) {
         console.error('Error updating tag:', error);
-        res.status(404).json({ message: 'Tag not found' });
+        res.status(500).json({ message: 'Internal Server Error' });
     }
 }
 
 export const deleteTag = async (req, res) => {
     const tagId = parseInt(req.params.tagId);
     try {
+        const findTag = await prisma.tag.findUnique({
+            where: {
+                id: tagId
+            }
+        })
+        if (!findTag) {
+            return res.status(404).json({
+                message: "Tag not found"
+            });
+        }
+
         const tag = await prisma.tag.delete({
             where: {
                 id: tagId
@@ -84,6 +110,6 @@ export const deleteTag = async (req, res) => {
         });
     } catch (error) {
         console.error('Error deleting tag:', error);
-        res.status(404).json({ message: 'Tag not found' });
+        res.status(500).json({ message: 'Internal Server Error' });
     }
 }

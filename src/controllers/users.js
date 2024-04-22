@@ -1,4 +1,4 @@
-import { prisma } from "./../../lib/prisma.js";
+import { prisma } from "./../lib/prisma.js";
 
 export const getAllUsers = async (req, res) => {
     const limit = req.query.limit
@@ -15,14 +15,20 @@ export const getAllUsers = async (req, res) => {
 
 export const createNewUser = async (req, res) => {
     try {
+        const name = req.body.name
+        const email = req.body.email
+        if (!name || !email) {
+            return res.status(400).json({ 
+                message: 'Name and Email are required' 
+            });
+        };
         const user = await prisma.users.create({
             data: {
-                name: req.body.name,
-                email: req.body.email
+                name: name,
+                email: name
             }
         });
 
-        // Mengirim data JSON sebagai respons
         res.status(201).json({
             status: res.statusCode,
             message: "Create new user success",
@@ -30,7 +36,7 @@ export const createNewUser = async (req, res) => {
         });
     } catch (error) {
         console.error('Error creating new user:', error);
-        res.status(400).json({ message: 'Internal server error' });
+        res.status(500).json({ message: 'Internal server error' });
     }
 };
 
@@ -54,7 +60,7 @@ export const getSpecificUser = async (req, res) => {
     })
 
     if (!user) {
-        res.status(404).json({
+        return res.status(404).json({
             status: res.statusCode,
             error: true,
             message: "User not found"
@@ -90,6 +96,17 @@ export const deleteUser = async (req, res) => {
     const id = parseInt(req.params.id);
 
     try {
+        const findUser = await prisma.users.findUnique({
+            where: {
+                id: id
+            }
+        })
+        if(!findUser){
+            return res.status(404).json({
+                message: 'User not found',
+            })
+        }
+        
         const user = await prisma.users.delete({
             where: {
                 id
@@ -104,8 +121,8 @@ export const deleteUser = async (req, res) => {
     } catch (err) {
         console.error('Error deleting user:', err);
 
-        res.status(404).json({
-            message: 'User not found',
+        res.status(500).json({
+            message: 'Internal Server Error',
             description: err.message
         });
     }

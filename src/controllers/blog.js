@@ -1,4 +1,4 @@
-import { prisma } from "./../../lib/prisma.js"
+import { prisma } from "./../lib/prisma.js"
 
 export const getAllBlogs = async (req, res) => {
     const limit = req.query.limit
@@ -21,13 +21,14 @@ export const getSpecificBlog = async (req, res) => {
             id: blogId,
         },
         include: {
+            author: true,
             tags: true,
             comments: true
         },
     })
 
     if (!blog) {
-        res.status(404).json({
+        return res.status(404).json({
             status: res.statusCode,
             error: true,
             message: "Blog not found"
@@ -38,17 +39,43 @@ export const getSpecificBlog = async (req, res) => {
 
 export const createNewBlog = async (req, res) => {
     try {
+        const authorId = req.body.authorId;
+        if (!authorId) {
+            return res.status(400).json({ message: 'Author ID is required' });
+        }
+
+        const author = await prisma.users.findUnique({
+            where: { id: authorId }
+        });
+        if (!author) {
+            return res.status(404).json({ message: 'Author not found' });
+        }
+
+        const tags = await Promise.all(req.body.tags.map(async tagName => {
+            let tag = await prisma.tag.findFirst({
+                where: { name: tagName }
+            });
+
+            if (!tag) {
+                tag = await prisma.tag.create({
+                    data: { name: tagName }
+                });
+            }
+            return tag;
+        }));
+
         const blog = await prisma.blog.create({
             data: {
                 title: req.body.title,
                 content: req.body.content,
                 published: req.body.published,
-                authorId: req.body.authorId,
+                authorId: authorId,
                 tags: {
-                    create: req.body.tags.map(tag => ({ name: tag }))
-                },
+                    connect: tags.map(tag => ({ id: tag.id }))
+                }
             }
-        })
+        });
+
         res.status(201).json({
             status: res.statusCode,
             message: "Create new blog success",
@@ -56,14 +83,46 @@ export const createNewBlog = async (req, res) => {
         });
     } catch (error) {
         console.error('Error creating new blog:', error);
-        res.status(400).json({ message: 'Internal server error' });
+        res.status(400).json({ message: 'Bad Request' });
     }
 };
+
 
 export const updateBlog = async (req, res) => {
     const blogId = parseInt(req.params.blogId);
 
     try {
+        const blog = await prisma.blog.findUnique({
+            where: {
+                id: blogId
+            },
+            include: {
+                tags: true
+            }
+        })
+
+        if (!blog) {
+            return res.status(404).json({
+                status: res.statusCode,
+                error: true,
+                message: "Blog not found"
+            });
+        }
+
+        const tags = await Promise.all(req.body.tags.map(async tagName => {
+            let tag = await prisma.tag.findFirst({
+                where: { name: tagName }
+            });
+
+            if (!tag) {
+                tag = await prisma.tag.create({
+                    data: { name: tagName }
+                });
+            }
+            return tag;
+        }));
+
+
         await prisma.blog.update({
             where: {
                 id: blogId
@@ -74,7 +133,7 @@ export const updateBlog = async (req, res) => {
                 published: req.body.published,
                 authorId: req.body.authorId,
                 tags: {
-                  set: req.body.tags
+                    set: tags && tags.map(tag => ({ id: tag.id })),
                 }
             }
         });
@@ -93,7 +152,7 @@ export const updateBlog = async (req, res) => {
         });
     } catch (error) {
         console.error('Error updating blog:', error);
-        res.status(404).json({ message: 'Blog not found' });
+        res.status(400).json({ message: 'Bad Request' });
     }
 }
 
@@ -101,6 +160,14 @@ export const deleteBlog = async (req, res) => {
     const blogId = parseInt(req.params.blogId);
 
     try {
+        const blogExist = await prisma.blog.findUnique({
+            where: {
+                id: blogId
+            }
+        });
+        if (!blogExist) {
+            return res.status(404).json({ message: 'Blog not found' });
+        }
         const blog = await prisma.blog.delete({
             where: {
                 id: blogId

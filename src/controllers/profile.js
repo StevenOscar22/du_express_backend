@@ -1,4 +1,4 @@
-import { prisma } from "./../../lib/prisma.js";
+import { prisma } from "./../lib/prisma.js";
 
 export const getAllUsersProfile = async (req, res) => {
     const limit = req.query.limit
@@ -15,6 +15,18 @@ export const getAllUsersProfile = async (req, res) => {
 
 export const createNewUserProfile = async (req, res) => {
     try {
+        const userId = req.body.userId;
+        if (!userId) {
+            return res.status(400).json({ message: 'User ID is required' });
+        }
+
+        const user = await prisma.users.findUnique({
+            where: { id: userId }
+        });
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
         const userProfile = await prisma.profile.create({
             data: {
                 username: req.body.username,
@@ -25,7 +37,6 @@ export const createNewUserProfile = async (req, res) => {
             }
         });
 
-        // Mengirim data JSON sebagai respons
         res.status(201).json({
             status: res.statusCode,
             message: "Create new profile success",
@@ -33,7 +44,7 @@ export const createNewUserProfile = async (req, res) => {
         });
     } catch (error) {
         console.error('Error creating new profile:', error);
-        res.status(400).json({ message: 'Internal server error' });
+        res.status(400).json({ message: 'Bad Request' });
     }
 }
 
@@ -42,6 +53,14 @@ export const updateProfile = async (req, res) => {
     const id = parseInt(req.params.id);
 
     try {
+        const profile = await prisma.profile.findUnique({
+            where: {
+                id: id
+            }
+        })
+        if (!profile) {
+            return res.status(404).json({ message: 'Profile not found' });
+        }
         const user = await prisma.profile.update({
             where: {
                 id
@@ -57,7 +76,7 @@ export const updateProfile = async (req, res) => {
         });
     } catch (error) {
         console.error('Error updating profile:', error);
-        res.status(404).json({ message: 'Profile not found' });
+        res.status(500).json({ message: 'Internal Server Error' });
     }
 }
 
@@ -65,6 +84,18 @@ export const deleteProfile = async (req, res) => {
     const id = parseInt(req.params.id);
 
     try {
+        const profile = await prisma.profile.findUnique({
+            where: {
+                id: id
+            }
+        })
+
+        if (!profile) {
+            return res.status(404).json({
+                message: 'Profile not found',
+            })
+        }
+
         const user = await prisma.profile.delete({
             where: {
                 id
@@ -79,8 +110,8 @@ export const deleteProfile = async (req, res) => {
     } catch (err) {
         console.error('Error deleting profile:', err);
 
-        res.status(404).json({
-            message: 'Profile not found',
+        res.status(500).json({
+            message: 'Internal Server Error',
             description: err.message
         });
     }
