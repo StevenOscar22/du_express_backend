@@ -6,6 +6,8 @@ import { usersRoutes } from "./routes/users.js";
 import { profileRoutes } from "./routes/profile.js";
 import { blogRoutes } from "./routes/blog.js";
 import { tagRoutes } from "./routes/tag.js";
+import { register } from "./routes/register.js";
+import { login } from "./routes/login.js";
 
 const app = express();
 const PORT = 4000;
@@ -22,6 +24,8 @@ app.use("/users", usersRoutes);
 app.use("/profile", profileRoutes);
 app.use("/blog", blogRoutes);
 app.use("/tag", tagRoutes)
+app.use('/register', register);
+app.use('/login', login);
 
 
 app.listen(PORT, () => {
