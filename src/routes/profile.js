@@ -10,7 +10,7 @@ profileRoutes.get('/', getAllUsersProfile);
 profileRoutes.post('/create', createNewUserProfile);
 
 // update user profile
-profileRoutes.patch("/update/:id", updateProfile);
+profileRoutes.patch("/:id/update", updateProfile);
 
 // delete user profile
-profileRoutes.delete("/delete/:id", deleteProfile);
+profileRoutes.delete("/:id/delete", deleteProfile);

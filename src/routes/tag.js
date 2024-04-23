@@ -13,7 +13,7 @@ tagRoutes.get("/:tagId", getSpecificTag);
 tagRoutes.post("/create", createNewTag);
 
 // update tag
-tagRoutes.patch("/edit/:tagId", updateTag);
+tagRoutes.patch("/:tagId/edit", updateTag);
 
 // delete tag
-tagRoutes.delete("/delete/:tagId", deleteTag);
+tagRoutes.delete("/:tagId/delete", deleteTag);

@@ -13,7 +13,7 @@ usersRoutes.get("/:id/profile", getSpecificUser);
 usersRoutes.post("/create", createNewUser);
 
 // update user
-usersRoutes.patch("/update/:id", updateUser);
+usersRoutes.patch("/:id/update", updateUser);
 
 // delete user
-usersRoutes.delete("/delete/:id", deleteUser);
+usersRoutes.delete(":id/delete", deleteUser);
