@@ -8,6 +8,7 @@ export const getAllBlogs = async (req, res) => {
         skip: page && parseInt(page),
         include: {
             tags: true,
+            author: true
         }
     });
     res.status(200).json(blogs);

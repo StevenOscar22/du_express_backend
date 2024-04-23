@@ -44,7 +44,7 @@ export const createNewUserProfile = async (req, res) => {
         });
     } catch (error) {
         console.error('Error creating new profile:', error);
-        res.status(400).json({ message: 'Bad Request' });
+        res.status(500).json({ message: 'Internal Server Error' });
     }
 }
 
