@@ -7,7 +7,7 @@ export const usersRoutes = express.Router();
 usersRoutes.get("/", getAllUsers);
 
 // view specific user
-usersRoutes.get("/profile/:id", getSpecificUser);
+usersRoutes.get("/:id/profile", getSpecificUser);
 
 // create user
 usersRoutes.post("/create", createNewUser);
