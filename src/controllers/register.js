@@ -1,10 +1,8 @@
-// controllers/registerController.js
-
 import { prisma } from "./../lib/prisma.js";
 import bcrypt from 'bcryptjs';
 
 export const registerUser = async (req, res) => {
-  const { username, password, address, phone } = req.body;
+  const { username, password, address, phone, userId } = req.body;
   try {
     // Mengecek apakah username sudah digunakan
     const existingUser = await prisma.profile.findUnique({ where: { username } });
@@ -20,6 +18,7 @@ export const registerUser = async (req, res) => {
         password: hashedPassword,
         address,
         phone,
+        userId
       },
     });
 
